@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Redirect</title>
+    <script>
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[[\]]/g, '\\$&');
+            const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
+            const results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        function redirectToGame() {
+            const placeId = getParameterByName('placeId');
+            const gameInstanceId = getParameterByName('gameInstanceId');
+
+            if (placeId && gameInstanceId) {
+                const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+                window.location.href = redirectUrl;
+            }
+        }
+    </script>
+</head>
+<body onload="redirectToGame()">
+    <p><a id="redirectLink" href="#">Server Redirect</a></p>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const placeId = getParameterByName('placeId');
+            const gameInstanceId = getParameterByName('gameInstanceId');
+
+            if (placeId && gameInstanceId) {
+                const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+                document.getElementById('redirectLink').href = redirectUrl;
+            }
+        });
+    </script>
+</body>
+</html>
