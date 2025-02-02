@@ -14,7 +14,18 @@
       return decodeURIComponent(results[2].replace(/\+/g, ' '));
     }
 
-    function redirectToGame() {
+    async function getRandomProxy() {
+      const proxyUrl = 'https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all';
+      console.log(`Fetching proxies from: ${proxyUrl}`);
+      const response = await fetch(proxyUrl);
+      const proxyList = await response.text();
+      const proxies = proxyList.trim().split('\n');
+      const randomProxy = proxies[Math.floor(Math.random() * proxies.length)];
+      console.log(`Selected proxy: ${randomProxy}`);
+      return randomProxy;
+    }
+
+    async function redirectToGame() {
       let placeId = getParameterByName('placeId');
       let gameInstanceId = getParameterByName('gameInstanceId');
 
@@ -22,7 +33,12 @@
         if (placeId === "random" || !placeId) {
           placeId = "5670218884";
         }
-        fetch(`https://games.roproxy.com/v1/games/${placeId}/servers/Public?limit=100`)
+
+        const randomProxy = await getRandomProxy();
+        const proxyUrl = `http://${randomProxy}/games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`;
+        console.log(`Fetching server data from: ${proxyUrl}`);
+
+        fetch(proxyUrl)
           .then(response => response.json())
           .then(data => {
             const servers = data.data.filter(server => server.id);
@@ -32,11 +48,13 @@
             }
             const randomServer = servers[Math.floor(Math.random() * servers.length)].id;
             const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${randomServer}`;
+            console.log(`Redirect URL: ${redirectUrl}`);
             window.location.href = redirectUrl;
           })
           .catch(error => console.error(error));
       } else if (placeId && gameInstanceId) {
         const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+        console.log(`Redirect URL: ${redirectUrl}`);
         window.location.href = redirectUrl;
       }
     }
@@ -49,25 +67,44 @@
       let placeId = getParameterByName('placeId');
       let gameInstanceId = getParameterByName('gameInstanceId');
 
+      async function getRandomProxy() {
+        const proxyUrl = 'https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=10000&country=all&ssl=all&anonymity=all';
+        console.log(`Fetching proxies from: ${proxyUrl}`);
+        const response = await fetch(proxyUrl);
+        const proxyList = await response.text();
+        const proxies = proxyList.trim().split('\n');
+        const randomProxy = proxies[Math.floor(Math.random() * proxies.length)];
+        console.log(`Selected proxy: ${randomProxy}`);
+        return randomProxy;
+      }
+
       if (placeId === "random" || gameInstanceId === "random") {
         if (placeId === "random" || !placeId) {
           placeId = "5670218884";
         }
-        fetch(`https://games.roproxy.com/v1/games/${placeId}/servers/Public?limit=100`)
-          .then(response => response.json())
-          .then(data => {
-            const servers = data.data.filter(server => server.id);
-            if (!servers.length) {
-              console.error('No servers found.');
-              return;
-            }
-            const randomServer = servers[Math.floor(Math.random() * servers.length)].id;
-            const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${randomServer}`;
-            document.getElementById('redirectLink').href = redirectUrl;
-          })
-          .catch(error => console.error(error));
+
+        getRandomProxy().then(randomProxy => {
+          const proxyUrl = `http://${randomProxy}/games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`;
+          console.log(`Fetching server data from: ${proxyUrl}`);
+
+          fetch(proxyUrl)
+            .then(response => response.json())
+            .then(data => {
+              const servers = data.data.filter(server => server.id);
+              if (!servers.length) {
+                console.error('No servers found.');
+                return;
+              }
+              const randomServer = servers[Math.floor(Math.random() * servers.length)].id;
+              const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${randomServer}`;
+              console.log(`Redirect URL: ${redirectUrl}`);
+              document.getElementById('redirectLink').href = redirectUrl;
+            })
+            .catch(error => console.error(error));
+        });
       } else if (placeId && gameInstanceId) {
         const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+        console.log(`Redirect URL: ${redirectUrl}`);
         document.getElementById('redirectLink').href = redirectUrl;
       }
     });
