@@ -1,41 +1,76 @@
 <!DOCTYPE html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Redirect</title>
-    <script>
-        function getParameterByName(name, url = window.location.href) {
-            name = name.replace(/[[\]]/g, '\\$&');
-            const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
-            const results = regex.exec(url);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Redirect</title>
+  <script>
+    function getParameterByName(name, url = window.location.href) {
+      name = name.replace(/[[\]]/g, '\\$&');
+      const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`);
+      const results = regex.exec(url);
+      if (!results) return null;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    }
+
+    function redirectToGame() {
+      let placeId = getParameterByName('placeId');
+      let gameInstanceId = getParameterByName('gameInstanceId');
+
+      if (placeId === "random" || gameInstanceId === "random") {
+        if (placeId === "random" || !placeId) {
+          placeId = "5670218884";
         }
-
-        function redirectToGame() {
-            const placeId = getParameterByName('placeId');
-            const gameInstanceId = getParameterByName('gameInstanceId');
-
-            if (placeId && gameInstanceId) {
-                const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
-                window.location.href = redirectUrl;
+        fetch(`https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`)
+          .then(response => response.json())
+          .then(data => {
+            const servers = data.data.filter(server => server.id);
+            if (!servers.length) {
+              console.error('No servers found.');
+              return;
             }
-        }
-    </script>
+            const randomServer = servers[Math.floor(Math.random() * servers.length)].id;
+            const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${randomServer}`;
+            window.location.href = redirectUrl;
+          })
+          .catch(error => console.error(error));
+      } else if (placeId && gameInstanceId) {
+        const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+        window.location.href = redirectUrl;
+      }
+    }
+  </script>
 </head>
 <body onload="redirectToGame()">
-    <p><a id="redirectLink" href="#">Server Redirect</a></p>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const placeId = getParameterByName('placeId');
-            const gameInstanceId = getParameterByName('gameInstanceId');
+  <p><a id="redirectLink" href="#">Server Redirect</a></p>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      let placeId = getParameterByName('placeId');
+      let gameInstanceId = getParameterByName('gameInstanceId');
 
-            if (placeId && gameInstanceId) {
-                const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
-                document.getElementById('redirectLink').href = redirectUrl;
+      if (placeId === "random" || gameInstanceId === "random") {
+        if (placeId === "random" || !placeId) {
+          placeId = "5670218884";
+        }
+        fetch(`https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`)
+          .then(response => response.json())
+          .then(data => {
+            const servers = data.data.filter(server => server.id);
+            if (!servers.length) {
+              console.error('No servers found.');
+              return;
             }
-        });
-    </script>
+            const randomServer = servers[Math.floor(Math.random() * servers.length)].id;
+            const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${randomServer}`;
+            document.getElementById('redirectLink').href = redirectUrl;
+          })
+          .catch(error => console.error(error));
+      } else if (placeId && gameInstanceId) {
+        const redirectUrl = `roblox://experiences/start?placeId=${placeId}&gameInstanceId=${gameInstanceId}`;
+        document.getElementById('redirectLink').href = redirectUrl;
+      }
+    });
+  </script>
 </body>
 </html>
